@@ -3,6 +3,7 @@ class LeafNode extends Node
   public float diametr;
   public Vector velocity;
   public Vector acceleration;
+  //public Vector center, massCenter;
   
   //for collision
   public boolean withIndex = false;
@@ -10,28 +11,35 @@ class LeafNode extends Node
   
   public LeafNode(float diametr, Vector position, Vector vel)
   {
-    center = new Vector(position);
+    center_x = position.x;
+    center_y = position.y;
     this.diametr = diametr;
     mass = 0.01f;
     velocity = new Vector(vel);
     acceleration = new Vector();
-    massCenter = new Vector(center);
+    massCenter_x = center_x;
+    massCenter_y = center_y;
   }
   public void CountForce(RegularNode tree)
   {
     //игнорируем пустые узлы.
-    if (tree.massCenter.isNaN()) return;
+    if (Float.isNaN(tree.massCenter_x) || Float.isNaN(tree.massCenter_y)) return;
     //игнорируем неразделённые узлы, в которых находится рассматриваемое тело.
     if (!tree.divided && this == tree.children.get(0)) return;
     
-    Vector force = tree.massCenter.SubR(center);
-    float distance = force.len();
+    float force_x = tree.massCenter_x - center_x;
+    float force_y = tree.massCenter_y - center_y;
+    float distance = sqrt(force_x*force_x + force_y*force_y);
     if (theta > tree.size / distance || !tree.divided)
     {
-      //force.normal();
-      force.Div(distance * distance + 100000);
-      //force.Mult();
-      acceleration.Add(force.MultR(tree.mass));
+      float denom = distance * distance + 100000;
+      force_x /= denom;
+      force_y /= denom;
+      
+      force_x *= tree.mass;
+      force_y *= tree.mass;
+      acceleration.x += force_x;
+      acceleration.y += force_y;
     }
     else
     {
@@ -45,12 +53,14 @@ class LeafNode extends Node
   public void Move()
   {
     velocity.Add(acceleration);
-    center.Add(velocity);
+    center_x += velocity.x;
+    center_y += velocity.y;
   }
   @Override
   public void CountMassCenter()
   {
-    massCenter = new Vector(center);
+    massCenter_x = center_x;
+    massCenter_y = center_y;
   }
   @Override
   public void DrawSection()
@@ -60,7 +70,7 @@ class LeafNode extends Node
     //rect(center.x + cameraOffset.x, center.y + cameraOffset.y, diametr, diametr);
     //ellipse(center.x + cameraOffset.x, center.y + cameraOffset.y, diametr, diametr);
     
-    vertex(center.x + cameraOffset.x, center.y + cameraOffset.y);
+    vertex(center_x + cameraOffset.x, center_y + cameraOffset.y);
     //vertex(dots[i].x, dots[i].y);
   }
 }

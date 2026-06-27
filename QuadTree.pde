@@ -4,7 +4,7 @@ class QuadTree
   
   public QuadTree(float len)
   {
-    root = new RegularNode(new Vector(len, len), new Vector(-len, -len));
+    root = new RegularNode(len, len, -len, -len);
   }
   
   
@@ -13,7 +13,7 @@ class QuadTree
     for (int i = bodies.size() - 1; i >= 0; i--)
     {
       LeafNode node = bodies.get(i);
-      if (abs(node.center.x) > maxDist || abs(node.center.y) > maxDist){
+      if (abs(node.center_x) > maxDist || abs(node.center_y) > maxDist){
         bodies.remove(i);
       }
       else root.AddLeaf(node); //<>// //<>//
@@ -52,7 +52,8 @@ class QuadTree
       leaf.acceleration.zero();
       leaf.CountForce(root);
       leaf.Move();
-      leaf.center.Sub(root.massCenter);
+      leaf.center_x -= root.massCenter_x;
+      leaf.center_y -= root.massCenter_y;
       leaf.DrawSection();
     }
     //root.DrawSection();

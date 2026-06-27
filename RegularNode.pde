@@ -2,26 +2,32 @@ class RegularNode extends Node
 {
   public ArrayList<Node> children = new ArrayList<Node>();
   public boolean divided = false, isLeafs = true, allNull = true;
-  public Vector rightUpCorner, leftDownCorner;
+  //public Vector rightUpCorner, leftDownCorner;
+  public float rightUpCorner_x, rightUpCorner_y;
+  public float leftDownCorner_x, leftDownCorner_y;
   public float size;
   
-  public RegularNode(Vector rightUpCorner, Vector leftDownCorner)
+  public RegularNode(float rightUpCorner_x, float rightUpCorner_y, float leftDownCorner_x, float leftDownCorner_y)
   {
-    this.rightUpCorner = new Vector(rightUpCorner);
-    this.leftDownCorner = new Vector(leftDownCorner);
-    center = rightUpCorner.AddR(leftDownCorner);
-    center.Div(2f);
-    size = abs(rightUpCorner.y - leftDownCorner.y);
+    this.rightUpCorner_x = rightUpCorner_x;
+    this.rightUpCorner_y = rightUpCorner_y;
+    this.leftDownCorner_x = leftDownCorner_x;
+    this.leftDownCorner_y = leftDownCorner_y;
+    center_x = rightUpCorner_x + leftDownCorner_x;
+    center_y = rightUpCorner_y + leftDownCorner_y;
+    center_x /= 2f;
+    center_y /= 2f;
+    size = abs(rightUpCorner_y - leftDownCorner_y);
     for (int i = 0; i < 4; i++){
       children.add(null);
     }
   }
   private void Distribute(Node leaf)
   {    
-    if (leaf.center.y >= center.y){
-      if (leaf.center.x >= center.x){
+    if (leaf.center_y >= center_y){
+      if (leaf.center_x >= center_x){
         if (children.get(0) == null){
-          RegularNode node = new RegularNode(new Vector(rightUpCorner), new Vector(center));
+          RegularNode node = new RegularNode(rightUpCorner_x, rightUpCorner_y, center_x, center_y);
           node.AddLeaf(leaf);
           children.set(0, node);
         }
@@ -29,7 +35,7 @@ class RegularNode extends Node
       }
       else {
         if (children.get(1) == null){
-          RegularNode node = new RegularNode(new Vector(center.x, rightUpCorner.y), new Vector(leftDownCorner.x, center.y));
+          RegularNode node = new RegularNode(center_x, rightUpCorner_y, leftDownCorner_x, center_y);
           node.AddLeaf(leaf);
           children.set(1, node);
         }
@@ -37,9 +43,9 @@ class RegularNode extends Node
       }
     }
     else{
-      if (leaf.center.x >= center.x){
+      if (leaf.center_x >= center_x){
         if (children.get(2) == null){
-          RegularNode node = new RegularNode(new Vector(rightUpCorner.x, center.y), new Vector(center.x, leftDownCorner.y));
+          RegularNode node = new RegularNode(rightUpCorner_x, center_y, center_x, leftDownCorner_y);
           node.AddLeaf(leaf);
           children.set(2, node);
         }
@@ -47,7 +53,7 @@ class RegularNode extends Node
       }
       else {
         if (children.get(3) == null){
-          RegularNode node = new RegularNode(new Vector(center), new Vector(leftDownCorner));
+          RegularNode node = new RegularNode(center_x, center_y, leftDownCorner_x, leftDownCorner_y);
           node.AddLeaf(leaf);
           children.set(3, node);
         }
@@ -113,11 +119,12 @@ class RegularNode extends Node
   @Override
   public void CountMassCenter()
   {
-    massCenter = new Vector();
+    massCenter_x = 0;
+    massCenter_y = 0;
     if (allNull)
     {
-      massCenter.x = Float.NaN;
-      massCenter.y = Float.NaN;
+      massCenter_x = Float.NaN;
+      massCenter_y = Float.NaN;
     }
     else
     {
@@ -126,22 +133,28 @@ class RegularNode extends Node
       {
         if (children.get(i) != null){
           children.get(i).CountMassCenter();
-          if (children.get(i).massCenter.isNaN()) continue;
-          massCenter.Add(children.get(i).massCenter.MultR(children.get(i).mass));
-          totalMass += children.get(i).mass;
+          if (Float.isNaN(children.get(i).massCenter_x) || Float.isNaN(children.get(i).massCenter_y)) continue;
+          float childMass = children.get(i).mass;
+          massCenter_x += children.get(i).massCenter_x * childMass;
+          massCenter_y += children.get(i).massCenter_y * childMass;
+          totalMass += childMass;
         }  
       }
-      massCenter.Div(totalMass);
+      if (!(Float.isNaN(massCenter_x/totalMass) || Float.isNaN(massCenter_y/totalMass))){
+        massCenter_x /= totalMass;
+        massCenter_y /= totalMass;
+      }
     }
   }
   
   public void MassCenter()
   {
-    massCenter = new Vector();
+    massCenter_x = 0;
+    massCenter_y = 0;
     if (allNull)
     {
-      massCenter.x = Float.NaN;
-      massCenter.y = Float.NaN;
+      massCenter_x = Float.NaN;
+      massCenter_y = Float.NaN;
     }
     else
     {
@@ -149,12 +162,17 @@ class RegularNode extends Node
       for (int i = 0; i < 4; i++)
       {
         if (children.get(i) != null){
-          if (children.get(i).massCenter.isNaN()) continue;
-          massCenter.Add(children.get(i).massCenter.MultR(children.get(i).mass));
-          totalMass += children.get(i).mass;
+          if (Float.isNaN(children.get(i).massCenter_x) || Float.isNaN(children.get(i).massCenter_y)) continue;
+          float childMass = children.get(i).mass;
+          massCenter_x += children.get(i).massCenter_x * childMass;
+          massCenter_y += children.get(i).massCenter_y * childMass;
+          totalMass += childMass;
         }  
       }
-      massCenter.Div(totalMass);
+      if (!(Float.isNaN(massCenter_x/totalMass) || Float.isNaN(massCenter_y/totalMass))){
+        massCenter_x /= totalMass;
+        massCenter_y /= totalMass;
+      }
     }
   }
   
@@ -167,10 +185,10 @@ class RegularNode extends Node
   public void DrawSection()
   {
     strokeWeight(1 / zoom);
-    DrawLine(leftDownCorner.x, leftDownCorner.y, leftDownCorner.x, rightUpCorner.y);
-    DrawLine(leftDownCorner.x, leftDownCorner.y, rightUpCorner.x, leftDownCorner.y);
-    DrawLine(rightUpCorner.x, rightUpCorner.y, leftDownCorner.x, rightUpCorner.y);
-    DrawLine(rightUpCorner.x, rightUpCorner.y, rightUpCorner.x, leftDownCorner.y);
+    DrawLine(leftDownCorner_x, leftDownCorner_y, leftDownCorner_x, rightUpCorner_y);
+    DrawLine(leftDownCorner_x, leftDownCorner_y, rightUpCorner_x, leftDownCorner_y);
+    DrawLine(rightUpCorner_x, rightUpCorner_y, leftDownCorner_x, rightUpCorner_y);
+    DrawLine(rightUpCorner_x, rightUpCorner_y, rightUpCorner_x, leftDownCorner_y);
     for (int i = 0; i < 4; i++)
     {
       if (children.get(i) != null)

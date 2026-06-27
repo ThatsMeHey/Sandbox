@@ -14,9 +14,9 @@ float planetRadius = 5;
 float maxDist = 150000;
 float theta = 0.7f;
 
-Cells cells;
+//Cells cells;
 
-
+Vector utils = new Vector();
 
 
 void setup() 
@@ -30,8 +30,8 @@ void setup()
   
   //CreateCloud(1000, 1000, 8000);
   //cells = new Cells();
-  CreateCloud(200, 500, 0, -90, 9000);
-  CreateCloud(200, -200, -1.5f, 90, 9000);
+  CreateCloud(200, 500, 0, -90, 15000);
+  CreateCloud(200, -200, -1.5f, 90, 15000);
 }
 
 
@@ -68,7 +68,6 @@ void CreateCloud(float radius, float posY, float vel, float A, int amount)
     vel_.x += vel;
     LeafNode body = new LeafNode(planetRadius, pos, vel_);
     bodies.add(body);
-    //cells.AddBody(i);
   }
 }
 void CreateCloud(float x, float y, int amount)
@@ -85,7 +84,6 @@ void CreateCloud(float x, float y, int amount)
   }
 }
 
-int a = 1;
 void draw() 
 {
   
@@ -107,8 +105,6 @@ void draw()
   tree.ProcessTree();
   
   endShape();
-  if (a == 200) println(a);
-  a++;
 }
 
 void DrawSample()
