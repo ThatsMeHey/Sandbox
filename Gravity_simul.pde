@@ -1,3 +1,4 @@
+import java.util.concurrent.*;
 float widthHalf;
 float heightHalf;
 ArrayList<LeafNode> bodies = new ArrayList<LeafNode>();
@@ -13,10 +14,11 @@ float panX = 0, panY = 0;
 float planetRadius = 5;
 float maxDist = 150000;
 float theta = 0.7f;
+float G = 5;
 
 //Cells cells;
-
-Vector utils = new Vector();
+int threads = 20;
+ExecutorService pool  = Executors.newFixedThreadPool(threads);
 
 
 void setup() 
@@ -30,26 +32,26 @@ void setup()
   
   //CreateCloud(1000, 1000, 8000);
   //cells = new Cells();
-  CreateCloud(200, 500, 0, -90, 15000);
-  CreateCloud(200, -200, -1.5f, 90, 15000);
+  CreateCloud(1000, 500, 1, 0, 25000);
+  CreateCloud(2000, -200, 10, 90, 50000);
 }
 
 
 
-void mousePressed() 
-{
-  if (mouseButton == LEFT) 
-  {
-    if (!pressed) HoldToCreate(mousePos.SubR(cameraOffset));
-  }
-}
-void mouseReleased() 
-{
-  if (mouseButton == LEFT) 
-  {
-    if (pressed) ReleaseToCreate(mousePos.SubR(cameraOffset));
-  }
-}
+//void mousePressed() 
+//{
+//  if (mouseButton == LEFT) 
+//  {
+//    if (!pressed) HoldToCreate(mousePos.SubR(cameraOffset));
+//  }
+//}
+//void mouseReleased() 
+//{
+//  if (mouseButton == LEFT) 
+//  {
+//    if (pressed) ReleaseToCreate(mousePos.SubR(cameraOffset));
+//  }
+//}
 
 void CreateCloud(float radius, float posY, float vel, float A, int amount)
 {  
@@ -62,8 +64,8 @@ void CreateCloud(float radius, float posY, float vel, float A, int amount)
     float dist = random (0.01f, radius);
     pos.Mult(dist);
     Vector vel_ = new Vector(cos(ang + A_), sin(ang + A_));
-    //vel_.zero();
-    vel_.Mult(10f * dist/500f);
+    vel_.zero();
+    vel_.Mult(10f * dist/90f);
     pos.y += posY;
     vel_.x += vel;
     LeafNode body = new LeafNode(planetRadius, pos, vel_);

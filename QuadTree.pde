@@ -14,47 +14,86 @@ class QuadTree
     {
       LeafNode node = bodies.get(i);
       if (abs(node.center_x) > maxDist || abs(node.center_y) > maxDist){
-        bodies.remove(i);
+        node.center_x = 0;
+        node.center_y = 0;
+        node.velocity.zero();
+        node.Move();
       }
-      else root.AddLeaf(node); //<>// //<>//
+      root.AddLeaf(node);  //<>//
     }
-    
-    //if (root.divided){
-    //  Thread[] threads = new Thread[4];
+    //if (!root.divided){
+    //  CountDownLatch latch = new CountDownLatch(threads);
     //  for (int i = 0; i < 4; i++) {
-    //    final int threadID = i;
-    //    threads[i] = new Thread(new Runnable() {
-    //      public void run() {
-    //        if (root.children.get(threadID) != null)
-    //          root.children.get(threadID).CountMassCenter();
-    //      }
-    //    });
-    //    threads[i].start();
+    //      final int id = i;
+    //      pool.submit(new Runnable() {
+    //          public void run() {
+    //              try {
+    //                if (root.children.get(id) != null)
+    //                  root.children.get(id).CountMassCenter();
+    //              } finally {
+    //                  latch.countDown(); // Сигналим, что поток закончил
+    //              }
+    //          }
+    //      });
     //  }
-      
     //  try {
-    //    for (Thread t : threads) {
-    //      t.join(); // ждем каждый по очереди
-    //    }
+    //      latch.await(); // Блокируемся, пока все 4 не закончат
     //  } catch (InterruptedException e) {
-    //    e.printStackTrace();
+    //      e.printStackTrace();
     //  }
-      
     //  root.MassCenter();
     //}
     //else root.CountMassCenter();
-    
     root.CountMassCenter();
     
-    for (int i = 0; i < bodies.size(); i++)
-    {
-      LeafNode leaf = bodies.get(i);
-      leaf.acceleration.zero();
-      leaf.CountForce(root);
-      leaf.Move();
-      leaf.center_x -= root.massCenter_x;
-      leaf.center_y -= root.massCenter_y;
-      leaf.DrawSection();
+    if (bodies.size() > 100){
+      CountDownLatch latch = new CountDownLatch(threads);
+      for (int i = 0; i < threads; i++) {
+          final int id = i;
+          final int len = (bodies.size() - bodies.size() % threads) / threads;
+          pool.submit(new Runnable() {
+              public void run() {
+                  try {
+                    int start = id * len;
+                    int end = 0;
+                    if (id == threads - 1) end = bodies.size();
+                    else end = start + len;
+                    for (int k = start; k < end; k++)
+                    {
+                      LeafNode leaf = bodies.get(k);
+                      leaf.acceleration.zero();
+                      leaf.CountForce(root);
+                      leaf.Move();
+                      leaf.center_x -= root.massCenter_x;
+                      leaf.center_y -= root.massCenter_y;
+                    }
+                  } finally {
+                      latch.countDown(); // Сигналим, что поток закончил
+                  }
+              }
+          });
+      }
+      try {
+          latch.await(); // Блокируемся, пока все 4 не закончат
+      } catch (InterruptedException e) {
+          e.printStackTrace();
+      }
+      
+      for (int i = 0; i < bodies.size(); i++){
+        bodies.get(i).DrawSection();
+      }
+    }
+    else{
+      for (int i = 0; i < bodies.size(); i++)
+      {
+        LeafNode leaf = bodies.get(i);
+        leaf.acceleration.zero();
+        leaf.CountForce(root);
+        leaf.Move();
+        leaf.center_x -= root.massCenter_x;
+        leaf.center_y -= root.massCenter_y;
+        leaf.DrawSection();
+      }
     }
     //root.DrawSection();
   }

@@ -3,7 +3,6 @@ class LeafNode extends Node
   public float diametr;
   public Vector velocity;
   public Vector acceleration;
-  //public Vector center, massCenter;
   
   //for collision
   public boolean withIndex = false;
@@ -33,11 +32,18 @@ class LeafNode extends Node
     if (theta > tree.size / distance || !tree.divided)
     {
       float denom = distance * distance + 100000;
+      //force_x /= distance;
+      //force_y /= distance;
+      
       force_x /= denom;
       force_y /= denom;
       
       force_x *= tree.mass;
       force_y *= tree.mass;
+      
+      force_x *= G;
+      force_y *= G;
+      
       acceleration.x += force_x;
       acceleration.y += force_y;
     }
