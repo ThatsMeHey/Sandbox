@@ -8,8 +8,15 @@ class LeafNode extends Node
   public boolean withIndex = false;
   public int ind1, ind2;
   
-  public LeafNode(float diametr, Vector position, Vector vel)
+  public int r, g, b;
+  public int fric;
+  
+  public LeafNode(float diametr, Vector position, Vector vel, int r, int g, int b, int fric)
   {
+    this.fric = fric;
+    this.r = r;
+    this.g = g;
+    this.b = b;
     center_x = position.x;
     center_y = position.y;
     this.diametr = diametr;
@@ -76,7 +83,16 @@ class LeafNode extends Node
     //rect(center.x + cameraOffset.x, center.y + cameraOffset.y, diametr, diametr);
     //ellipse(center.x + cameraOffset.x, center.y + cameraOffset.y, diametr, diametr);
     
+    stroke(r, g, b, 50);
     vertex(center_x + cameraOffset.x, center_y + cameraOffset.y);
+    
+    //sine.play(fric, velocity.len());
+    
+    //sine.freq(fric);   // Частота 800 Гц
+    //sine.amp(velocity.len());    // Громкость 20%
+    //sine.play();
+    //delay(1);
+    //sine.stop();
     //vertex(dots[i].x, dots[i].y);
   }
 }

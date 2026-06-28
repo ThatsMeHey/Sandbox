@@ -6,20 +6,21 @@ boolean pressed;
 Vector createPos = new Vector(), mousePos = new Vector(), cameraOffset = new Vector();
 float scale = 10f;
 
-float zoom = 1.0;
+float zoom = 0.2896643;
 float zoomMin = 0.0025, zoomMax = 5.0;
 float zoomFactor = 1.1;
 float panX = 0, panY = 0;
 
-float planetRadius = 5;
+float planetRadius = 10;
 float maxDist = 150000;
 float theta = 0.7f;
-float G = 5;
+float G = 1;
 
 //Cells cells;
 int threads = 20;
 ExecutorService pool  = Executors.newFixedThreadPool(threads);
 
+//SinOsc sine;
 
 void setup() 
 {
@@ -29,12 +30,21 @@ void setup()
   pressed = false;
   widthHalf = width / 2f;
   heightHalf = height / 2f;
+  println(width);
+  println(height);
   
   //CreateCloud(1000, 1000, 8000);
   //cells = new Cells();
-  CreateCloud(1000, 500, 1, 0, 25000);
-  CreateCloud(2000, -200, 10, 90, 50000);
+  //sine = new SinOsc(this);
+
+
+  //уменьшаем на 2 градуса, радиус увеличиваем на 1, скорость уменшьаем на 0.5, высоту приближаем к 0 на 10
+  CreateCloud( 83, 970, -21.5, 84, 7500, 255,   0, 255, 100);
+  CreateCloud(103, 470,  8.5, -36, 4500,   0, 255, 255, 200);
+  CreateCloud(153,   0, -1.5,  84, 9000, 255, 255, 255, 300);
 }
+
+//ffmpeg -framerate 60 -i "C:/Users/danil/Desktop/Gravity_simul/screenshots/frame-%10d.png" -c:v libx264 -pix_fmt yuv420p output4.mp4
 
 
 
@@ -53,7 +63,7 @@ void setup()
 //  }
 //}
 
-void CreateCloud(float radius, float posY, float vel, float A, int amount)
+void CreateCloud(float radius, float posY, float vel, float A, int amount, int r, int g, int b, int fric)
 {  
   float A_ = A * PI / 180f;
   for (int i = 0; i < amount; i++)
@@ -64,32 +74,22 @@ void CreateCloud(float radius, float posY, float vel, float A, int amount)
     float dist = random (0.01f, radius);
     pos.Mult(dist);
     Vector vel_ = new Vector(cos(ang + A_), sin(ang + A_));
-    vel_.zero();
-    vel_.Mult(10f * dist/90f);
+    //vel_.zero();
+    vel_.Mult(10f * dist/100f);
     pos.y += posY;
     vel_.x += vel;
-    LeafNode body = new LeafNode(planetRadius, pos, vel_);
-    bodies.add(body);
-  }
-}
-void CreateCloud(float x, float y, int amount)
-{
-  for (int i = 0; i < amount; i++)
-  {
-    float k = random(0f, 360f);
-    float ang = radians(k);
-    Vector pos = new Vector(random(-x, x), random(-y, y));
-    Vector vel_ = new Vector(cos(ang)*10, sin(ang)*5);
-    //vel_ = new Vector(0, 0);
-    LeafNode body = new LeafNode(10, pos, vel_);
+    LeafNode body = new LeafNode(planetRadius, pos, vel_, r, g, b, fric);
     bodies.add(body);
   }
 }
 
+boolean first = true;
+
+int a = 1;
+
 void draw() 
 {
-  
-  background(0);
+  background(8);
   translate(widthHalf, heightHalf);
   scale(zoom);
   
@@ -99,14 +99,26 @@ void draw()
   //mousePos.Div(zoom);
   
   //DrawSample();
+  
   stroke(255);
-  strokeWeight(4);
+  strokeWeight(planetRadius);
   beginShape(POINTS);
   
   QuadTree tree = new QuadTree(maxDist);
   tree.ProcessTree();
   
   endShape();
+  
+  //if (a <= 10800){
+  //  saveFrame("screenshots/frame-##########.png");
+  //  println(a);
+  //  a++;
+  //}
+  //else
+  //  exit();
+  
+  
+  //println(zoom);
 }
 
 void DrawSample()
@@ -138,12 +150,12 @@ private void HoldToCreate(Vector mousePos)
   pressed = true;
   createPos = mousePos.AddR(Offset());
 }
-private void ReleaseToCreate(Vector mousePos)
-{
-  pressed = false;
-  LeafNode body = new LeafNode(planetRadius, createPos, createPos.SubR(mousePos).DivR(80));
-  bodies.add(body);
-}
+//private void ReleaseToCreate(Vector mousePos)
+//{
+//  pressed = false;
+//  LeafNode body = new LeafNode(planetRadius, createPos, createPos.SubR(mousePos).DivR(80));
+//  bodies.add(body);
+//}
 void ProcessKey()
 {
   Vector off = new Vector();

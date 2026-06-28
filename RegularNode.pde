@@ -62,7 +62,7 @@ class RegularNode extends Node
     }
   }
   
-  public void AddLeaf(Node leaf)
+  public synchronized void AddLeaf(Node leaf)
   {
     if (!divided)
     {

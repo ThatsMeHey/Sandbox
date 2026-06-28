@@ -17,36 +17,15 @@ class QuadTree
         node.center_x = 0;
         node.center_y = 0;
         node.velocity.zero();
-        node.Move();
       }
       root.AddLeaf(node);  //<>//
     }
-    //if (!root.divided){
-    //  CountDownLatch latch = new CountDownLatch(threads);
-    //  for (int i = 0; i < 4; i++) {
-    //      final int id = i;
-    //      pool.submit(new Runnable() {
-    //          public void run() {
-    //              try {
-    //                if (root.children.get(id) != null)
-    //                  root.children.get(id).CountMassCenter();
-    //              } finally {
-    //                  latch.countDown(); // Сигналим, что поток закончил
-    //              }
-    //          }
-    //      });
-    //  }
-    //  try {
-    //      latch.await(); // Блокируемся, пока все 4 не закончат
-    //  } catch (InterruptedException e) {
-    //      e.printStackTrace();
-    //  }
-    //  root.MassCenter();
-    //}
-    //else root.CountMassCenter();
+    
+    
     root.CountMassCenter();
     
-    if (bodies.size() > 100){
+    
+    if (bodies.size() > threads){
       CountDownLatch latch = new CountDownLatch(threads);
       for (int i = 0; i < threads; i++) {
           final int id = i;
@@ -74,7 +53,7 @@ class QuadTree
           });
       }
       try {
-          latch.await(); // Блокируемся, пока все 4 не закончат
+          latch.await(); // Блокируемся, пока все не закончат
       } catch (InterruptedException e) {
           e.printStackTrace();
       }
